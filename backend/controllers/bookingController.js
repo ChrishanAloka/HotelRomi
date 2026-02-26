@@ -35,6 +35,16 @@ exports.createBooking = async (req, res) => {
         if (conflict) return res.status(400).json({ message: 'Room not available for selected dates' });
 
         const roomDoc = await Room.findById(room);
+        if (!roomDoc) return res.status(404).json({ message: 'Room not found' });
+
+        const adults = Number(req.body.adults || 0);
+        const children = Number(req.body.children || 0);
+        if (adults + children > roomDoc.capacity) {
+            return res.status(400).json({
+                message: `Total persons (${adults + children}) exceeds room capacity (${roomDoc.capacity})`
+            });
+        }
+
         const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
         const totalAmount = roomDoc.price * nights;
 

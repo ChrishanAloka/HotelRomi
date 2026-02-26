@@ -31,6 +31,9 @@ export default function BookRoomPage() {
 
     const placeBooking = async () => {
         if (!form.customerName || !form.customerPhone) return setError('Please fill required fields.');
+        if (form.adults + form.children > selectedRoom.capacity) {
+            return setError(`This room only accommodates up to ${selectedRoom.capacity} persons.`);
+        }
         setLoading(true); setError('');
         try {
             const nights = Math.ceil((new Date(search.checkOut) - new Date(search.checkIn)) / 86400000);
@@ -165,6 +168,9 @@ export default function BookRoomPage() {
                                         <h5 style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.3rem', color: 'var(--cream)' }}>
                                             Room {room.roomNumber}
                                         </h5>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                                            <i className="bi bi-people me-1"></i> Max {room.capacity} Persons
+                                        </div>
                                         {room.description && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{room.description}</p>}
                                         <div className="d-flex flex-wrap gap-1 mb-3">
                                             {room.amenities?.map((a, i) => (
@@ -206,7 +212,10 @@ export default function BookRoomPage() {
                             </div>
                             <div>
                                 <div style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>{nights} night(s) · {search.checkIn} → {search.checkOut}</div>
-                                <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.3rem', color: 'var(--gold)' }}>LKR {(selectedRoom.price * nights).toLocaleString()}</div>
+                                <div className="d-flex align-items-center gap-2">
+                                    <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.3rem', color: 'var(--gold)' }}>LKR {(selectedRoom.price * nights).toLocaleString()}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(Max {selectedRoom.capacity} Persons)</div>
+                                </div>
                             </div>
                             <button className="btn btn-outline-gold btn-sm ms-auto" onClick={() => setStep(2)}>Change</button>
                         </div>
@@ -220,7 +229,7 @@ export default function BookRoomPage() {
                                         value={form.customerName} onChange={e => setForm(p => ({ ...p, customerName: e.target.value }))} />
                                 </div>
                                 <div className="col-md-6">
-                                    <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.4rem' }}>Phone Number *</label>
+                                    <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.4rem' }}>WhatsApp Phone Number *</label>
                                     <input className="form-control form-control-dark" placeholder="07X XXX XXXX" type="tel"
                                         value={form.customerPhone} onChange={e => setForm(p => ({ ...p, customerPhone: e.target.value }))} />
                                 </div>
@@ -231,13 +240,18 @@ export default function BookRoomPage() {
                                 </div>
                                 <div className="col-md-3">
                                     <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.4rem' }}>Adults</label>
-                                    <input type="number" className="form-control form-control-dark" min="1" max="10"
+                                    <input type="number" className="form-control form-control-dark" min="1" max={selectedRoom.capacity}
                                         value={form.adults} onChange={e => setForm(p => ({ ...p, adults: +e.target.value }))} />
                                 </div>
                                 <div className="col-md-3">
                                     <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.4rem' }}>Children</label>
-                                    <input type="number" className="form-control form-control-dark" min="0" max="10"
+                                    <input type="number" className="form-control form-control-dark" min="0" max={selectedRoom.capacity - 1}
                                         value={form.children} onChange={e => setForm(p => ({ ...p, children: +e.target.value }))} />
+                                </div>
+                                <div className="col-12 mt-1">
+                                    <div style={{ fontSize: '0.8rem', color: form.adults + form.children > selectedRoom.capacity ? 'var(--danger)' : 'var(--text-muted)' }}>
+                                        Total Persons: {form.adults + form.children} / {selectedRoom.capacity}
+                                    </div>
                                 </div>
                                 <div className="col-12">
                                     <div className="form-check">
