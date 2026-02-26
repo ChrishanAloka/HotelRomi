@@ -9,7 +9,7 @@ export default function BookRoomPage() {
     const [search, setSearch] = useState({ checkIn: '', checkOut: '', type: '' });
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedRoom, setSelectedRoom] = useState(null);
+    const [selectedRooms, setSelectedRooms] = useState([]);
     const [form, setForm] = useState({ customerName: '', customerPhone: '', customerEmail: '', adults: 1, children: 0, includeRoomService: false, specialRequests: '' });
     const [booked, setBooked] = useState(null);
     const [error, setError] = useState('');
@@ -27,18 +27,31 @@ export default function BookRoomPage() {
         } finally { setLoading(false); }
     };
 
-    const selectRoom = (room) => { setSelectedRoom(room); setStep(3); };
+    const toggleRoom = (room) => {
+        setSelectedRooms(prev =>
+            prev.find(r => r._id === room._id)
+                ? prev.filter(r => r._id !== room._id)
+                : [...prev, room]
+        );
+    };
+
+    const goToDetails = () => {
+        if (selectedRooms.length === 0) return setError('Please select at least one room.');
+        setStep(3);
+    };
+
+    const totalCapacity = selectedRooms.reduce((sum, r) => sum + r.capacity, 0);
+    const totalPricePerNight = selectedRooms.reduce((sum, r) => sum + (r.price || 0), 0);
 
     const placeBooking = async () => {
         if (!form.customerName || !form.customerPhone) return setError('Please fill required fields.');
-        if (form.adults + form.children > selectedRoom.capacity) {
-            return setError(`This room only accommodates up to ${selectedRoom.capacity} persons.`);
+        if (form.adults + form.children > totalCapacity) {
+            return setError(`Total persons exceed total capacity (${totalCapacity}) of your selected rooms.`);
         }
         setLoading(true); setError('');
         try {
-            const nights = Math.ceil((new Date(search.checkOut) - new Date(search.checkIn)) / 86400000);
             const res = await bookingService.create({
-                ...form, room: selectedRoom._id,
+                ...form, rooms: selectedRooms.map(r => r._id),
                 checkIn: search.checkIn, checkOut: search.checkOut
             });
             setBooked(res.data);
@@ -49,10 +62,11 @@ export default function BookRoomPage() {
     };
 
     const sendWhatsApp = () => {
+        const roomList = selectedRooms.map(r => `Room ${r.roomNumber}`).join(', ');
         const msg = encodeURIComponent(
             `🏨 *New Room Booking — Hotel Romi*\n\n` +
             `*Customer:* ${booked.customerName}\n` +
-            `*Room:* Room ${selectedRoom.roomNumber} (${selectedRoom.type})\n` +
+            `*Rooms:* ${roomList}\n` +
             `*Check-In:* ${new Date(search.checkIn).toLocaleDateString()}\n` +
             `*Check-Out:* ${new Date(search.checkOut).toLocaleDateString()}\n` +
             `*Total:* LKR ${booked.totalAmount?.toLocaleString()}\n\n` +
@@ -139,18 +153,40 @@ export default function BookRoomPage() {
                             <div style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>
                                 {nights} night(s) · {search.checkIn} → {search.checkOut}
                             </div>
-                            <button className="btn btn-outline-gold btn-sm" onClick={() => setStep(1)}>
-                                <i className="bi bi-arrow-left me-1"></i>Modify
-                            </button>
+                            <div className="d-flex gap-2">
+                                <button className="btn btn-outline-gold btn-sm" onClick={() => setStep(1)}>
+                                    <i className="bi bi-arrow-left me-1"></i>Modify
+                                </button>
+                                <button className="btn btn-gold btn-sm px-4" disabled={selectedRooms.length === 0} onClick={goToDetails}>
+                                    Details <i className="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
                         </div>
+                        {selectedRooms.length > 0 && (
+                            <div className="card-dark p-2 mb-3 d-flex align-items-center justify-content-between" style={{ border: '1px solid var(--gold)', background: 'rgba(241, 229, 172, 0.05)' }}>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--cream)', paddingLeft: '0.5rem' }}>
+                                    <span className="text-gold fw-bold">{selectedRooms.length}</span> Room(s) selected
+                                </div>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--gold)', fontWeight: 600, paddingRight: '0.5rem' }}>
+                                    Total: LKR {(totalPricePerNight * nights).toLocaleString()}
+                                </div>
+                            </div>
+                        )}
                         <div className="row g-3">
                             {rooms.map(room => (
                                 <div key={room._id} className="col-md-6">
                                     <div className="card-dark p-4" style={{
                                         opacity: room.isAvailable ? 1 : 0.5,
-                                        border: `1px solid ${room.isAvailable ? 'rgba(241, 229, 172, 0.2)' : 'rgba(255,255,255,0.05)'}`,
-                                        transition: 'all 0.2s'
-                                    }}>
+                                        border: selectedRooms.find(r => r._id === room._id) ? '2px solid var(--gold)' : `1px solid ${room.isAvailable ? 'rgba(241, 229, 172, 0.2)' : 'rgba(255,255,255,0.05)'}`,
+                                        transition: 'all 0.2s',
+                                        cursor: room.isAvailable ? 'pointer' : 'default',
+                                        position: 'relative'
+                                    }} onClick={() => room.isAvailable && toggleRoom(room)}>
+                                        {selectedRooms.find(r => r._id === room._id) && (
+                                            <div style={{ position: 'absolute', top: -10, right: -10, background: 'var(--gold)', color: 'var(--dark)', width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 10px rgba(0,0,0,0.5)' }}>
+                                                <i className="bi bi-check-lg" style={{ fontSize: '0.8rem' }}></i>
+                                            </div>
+                                        )}
                                         <div className="d-flex justify-content-between align-items-start mb-2">
                                             <div>
                                                 <span className="badge-gold me-2">{room.type}</span>
@@ -185,8 +221,9 @@ export default function BookRoomPage() {
                                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>/night</span>
                                                 {nights > 0 && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total: LKR {(room.price * nights).toLocaleString()}</div>}
                                             </div>
-                                            <button className="btn btn-gold btn-sm" disabled={!room.isAvailable} onClick={() => selectRoom(room)}>
-                                                Select
+                                            <button className={`btn btn-sm ${selectedRooms.find(r => r._id === room._id) ? 'btn-gold' : 'btn-outline-gold'}`}
+                                                disabled={!room.isAvailable}>
+                                                {selectedRooms.find(r => r._id === room._id) ? 'Selected' : 'Select'}
                                             </button>
                                         </div>
                                     </div>
@@ -203,18 +240,20 @@ export default function BookRoomPage() {
                 )}
 
                 {/* Step 3: Guest Details */}
-                {step === 3 && selectedRoom && (
+                {step === 3 && selectedRooms.length > 0 && (
                     <div className="animate-in">
                         <div className="card-dark p-3 mb-4 d-flex align-items-center gap-3">
                             <div style={{ background: 'rgba(241, 229, 172, 0.1)', padding: '0.75rem 1rem', borderRadius: 3, border: '1px solid rgba(241, 229, 172, 0.2)' }}>
-                                <div className="badge-gold">{selectedRoom.type}</div>
-                                <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.2rem', color: 'var(--cream)', marginTop: '0.25rem' }}>Room {selectedRoom.roomNumber}</div>
+                                <div className="badge-gold">{selectedRooms.length} Rooms</div>
+                                <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.2rem', color: 'var(--cream)', marginTop: '0.25rem' }}>
+                                    {selectedRooms.map(r => r.roomNumber).join(', ')}
+                                </div>
                             </div>
                             <div>
                                 <div style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>{nights} night(s) · {search.checkIn} → {search.checkOut}</div>
                                 <div className="d-flex align-items-center gap-2">
-                                    <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.3rem', color: 'var(--gold)' }}>LKR {(selectedRoom.price * nights).toLocaleString()}</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(Max {selectedRoom.capacity} Persons)</div>
+                                    <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.3rem', color: 'var(--gold)' }}>LKR {(totalPricePerNight * nights).toLocaleString()}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(Max {totalCapacity} Persons)</div>
                                 </div>
                             </div>
                             <button className="btn btn-outline-gold btn-sm ms-auto" onClick={() => setStep(2)}>Change</button>
@@ -240,17 +279,17 @@ export default function BookRoomPage() {
                                 </div>
                                 <div className="col-md-3">
                                     <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.4rem' }}>Adults</label>
-                                    <input type="number" className="form-control form-control-dark" min="1" max={selectedRoom.capacity}
+                                    <input type="number" className="form-control form-control-dark" min="1" max={totalCapacity}
                                         value={form.adults} onChange={e => setForm(p => ({ ...p, adults: +e.target.value }))} />
                                 </div>
                                 <div className="col-md-3">
                                     <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '0.4rem' }}>Children</label>
-                                    <input type="number" className="form-control form-control-dark" min="0" max={selectedRoom.capacity - 1}
+                                    <input type="number" className="form-control form-control-dark" min="0" max={totalCapacity - 1}
                                         value={form.children} onChange={e => setForm(p => ({ ...p, children: +e.target.value }))} />
                                 </div>
                                 <div className="col-12 mt-1">
-                                    <div style={{ fontSize: '0.8rem', color: form.adults + form.children > selectedRoom.capacity ? 'var(--danger)' : 'var(--text-muted)' }}>
-                                        Total Persons: {form.adults + form.children} / {selectedRoom.capacity}
+                                    <div style={{ fontSize: '0.8rem', color: form.adults + form.children > totalCapacity ? 'var(--danger)' : 'var(--text-muted)' }}>
+                                        Total Persons: {form.adults + form.children} / {totalCapacity}
                                     </div>
                                 </div>
                                 <div className="col-12">
@@ -286,8 +325,10 @@ export default function BookRoomPage() {
                         <p style={{ color: 'var(--text-light)', marginBottom: '2rem' }}>Your booking is pending confirmation from our team.</p>
                         <div className="card-dark-3 p-4 text-start" style={{ maxWidth: 400, margin: '0 auto 2rem' }}>
                             <div className="row g-2" style={{ fontSize: '0.875rem' }}>
-                                <div className="col-5" style={{ color: 'var(--text-muted)' }}>Room:</div>
-                                <div className="col-7" style={{ color: 'var(--cream)' }}>Room {selectedRoom.roomNumber}</div>
+                                <div className="col-5" style={{ color: 'var(--text-muted)' }}>Rooms:</div>
+                                <div className="col-7" style={{ color: 'var(--cream)' }}>
+                                    {selectedRooms.map(r => `Room ${r.roomNumber}`).join(', ')}
+                                </div>
                                 <div className="col-5" style={{ color: 'var(--text-muted)' }}>Check-In Date:</div>
                                 <div className="col-7" style={{ color: 'var(--cream)' }}>{search.checkIn}</div>
                                 <div className="col-5" style={{ color: 'var(--text-muted)' }}>Check-Out Date:</div>
@@ -304,7 +345,7 @@ export default function BookRoomPage() {
                                 <i className="bi bi-whatsapp me-2"></i>Send via WhatsApp
                             </button>
                             <a href={`/track-order`} className="btn btn-outline-gold">Track My Booking</a>
-                            <button className="btn btn-outline-gold" onClick={() => { setStep(1); setBooked(null); setSelectedRoom(null); }}>
+                            <button className="btn btn-outline-gold" onClick={() => { setStep(1); setBooked(null); setSelectedRooms([]); }}>
                                 New Booking
                             </button>
                         </div>

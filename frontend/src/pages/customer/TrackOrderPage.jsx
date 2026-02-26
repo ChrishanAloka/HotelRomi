@@ -164,7 +164,7 @@ export default function TrackOrderPage() {
                                     <div className="d-flex justify-content-between align-items-start mb-3">
                                         <div>
                                             <div style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.2rem', color: 'var(--cream)' }}>
-                                                Room {booking.room?.roomNumber} — {booking.room?.type}
+                                                Rooms: {booking.rooms?.map(r => r.roomNumber).join(', ') || 'N/A'}
                                             </div>
                                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                                 Booked on {new Date(booking.createdAt).toLocaleDateString()}

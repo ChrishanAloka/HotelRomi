@@ -3,7 +3,7 @@ const Room = require('../models/Room');
 
 exports.getBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find().populate('room').sort({ createdAt: -1 });
+        const bookings = await Booking.find().populate('rooms').sort({ createdAt: -1 });
         res.json(bookings);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -12,7 +12,7 @@ exports.getBookings = async (req, res) => {
 
 exports.getBookingByPhone = async (req, res) => {
     try {
-        const bookings = await Booking.find({ customerPhone: req.params.phone }).populate('room').sort({ createdAt: -1 });
+        const bookings = await Booking.find({ customerPhone: req.params.phone }).populate('rooms').sort({ createdAt: -1 });
         res.json(bookings);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -21,10 +21,10 @@ exports.getBookingByPhone = async (req, res) => {
 
 exports.createBooking = async (req, res) => {
     try {
-        const { room, checkIn, checkOut } = req.body;
+        const { rooms, checkIn, checkOut } = req.body;
         // Check availability
         const conflict = await Booking.findOne({
-            room,
+            rooms: { $in: rooms },
             status: { $nin: ['Cancelled', 'Checked-Out'] },
             $or: [
                 { checkIn: { $lt: new Date(checkOut), $gte: new Date(checkIn) } },
@@ -32,21 +32,23 @@ exports.createBooking = async (req, res) => {
                 { checkIn: { $lte: new Date(checkIn) }, checkOut: { $gte: new Date(checkOut) } }
             ]
         });
-        if (conflict) return res.status(400).json({ message: 'Room not available for selected dates' });
+        if (conflict) return res.status(400).json({ message: 'One or more rooms are not available for selected dates' });
 
-        const roomDoc = await Room.findById(room);
-        if (!roomDoc) return res.status(404).json({ message: 'Room not found' });
+        const roomDocs = await Room.find({ _id: { $in: rooms } });
+        if (roomDocs.length !== rooms.length) return res.status(404).json({ message: 'One or more rooms not found' });
 
+        const totalCapacity = roomDocs.reduce((sum, r) => sum + r.capacity, 0);
         const adults = Number(req.body.adults || 0);
         const children = Number(req.body.children || 0);
-        if (adults + children > roomDoc.capacity) {
+        if (adults + children > totalCapacity) {
             return res.status(400).json({
-                message: `Total persons (${adults + children}) exceeds room capacity (${roomDoc.capacity})`
+                message: `Total persons (${adults + children}) exceeds total capacity (${totalCapacity}) of selected rooms`
             });
         }
 
         const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
-        const totalAmount = roomDoc.price * nights;
+        const totalPricePerNight = roomDocs.reduce((sum, r) => sum + r.price, 0);
+        const totalAmount = totalPricePerNight * nights;
 
         const booking = await Booking.create({ ...req.body, totalAmount });
         res.status(201).json(booking);
@@ -61,7 +63,7 @@ exports.updateBookingStatus = async (req, res) => {
             req.params.id,
             { status: req.body.status },
             { new: true }
-        ).populate('room');
+        ).populate('rooms');
         res.json(booking);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -70,7 +72,7 @@ exports.updateBookingStatus = async (req, res) => {
 
 exports.updateBooking = async (req, res) => {
     try {
-        const booking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('room');
+        const booking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('rooms');
         res.json(booking);
     } catch (err) {
         res.status(500).json({ message: err.message });

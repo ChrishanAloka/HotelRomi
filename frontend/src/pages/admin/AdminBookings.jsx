@@ -19,7 +19,7 @@ export default function AdminBookings() {
     const openInvoiceModal = (b) => {
         setSelected(b);
         const nights = Math.ceil((new Date(b.checkOut) - new Date(b.checkIn)) / (1000 * 60 * 60 * 24));
-        const subtotal = (b.room?.price * nights) + (b.includeRoomService ? 500 : 0);
+        const subtotal = b.totalAmount || 0;
         setInvoiceForm({
             discount: 0,
             tax: Math.round(subtotal * 0.1),
@@ -59,7 +59,7 @@ export default function AdminBookings() {
             `🏨 *Hotel Romi — Booking Update*\n\n` +
             `Hello ${b.customerName},\n\n` +
             `${statusMsg}\n\n` +
-            `*Room:* Room ${b.room?.roomNumber}\n` +
+            `*Rooms:* ${b.rooms?.map(r => `Room ${r.roomNumber}`).join(', ') || 'N/A'}\n` +
             `*Date:* ${new Date(b.checkIn).toLocaleDateString()} — ${new Date(b.checkOut).toLocaleDateString()}\n\n` +
             `See you soon!`
         );
@@ -100,7 +100,14 @@ export default function AdminBookings() {
                                             <div style={{ fontWeight: 500, color: 'var(--cream)' }}>{b.customerName}</div>
                                             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{b.customerPhone}</div>
                                         </td>
-                                        <td><span className="badge-gold">{b.room?.roomNumber}</span> <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{b.room?.type}</span></td>
+                                        <td>
+                                            <div className="d-flex flex-wrap gap-1">
+                                                {b.rooms?.map(r => (
+                                                    <span key={r._id} className="badge-gold">#{r.roomNumber}</span>
+                                                ))}
+                                                {(!b.rooms || b.rooms.length === 0) && <span className="text-muted small">No rooms</span>}
+                                            </div>
+                                        </td>
                                         <td style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>{new Date(b.checkIn).toLocaleDateString()}</td>
                                         <td style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>{new Date(b.checkOut).toLocaleDateString()}</td>
                                         <td style={{ fontFamily: 'Cormorant Garamond', color: 'var(--gold)', fontSize: '1rem' }}>LKR {b.totalAmount?.toLocaleString()}</td>
@@ -150,8 +157,10 @@ export default function AdminBookings() {
                                         <span style={{ color: 'var(--cream)' }}>{selected.customerName}</span>
                                     </div>
                                     <div className="d-flex justify-content-between mb-1">
-                                        <span style={{ color: 'var(--text-muted)' }}>Room:</span>
-                                        <span style={{ color: 'var(--cream)' }}>Room {selected.room?.roomNumber} ({selected.room?.type})</span>
+                                        <span style={{ color: 'var(--text-muted)' }}>Rooms:</span>
+                                        <span style={{ color: 'var(--cream)', textAlign: 'right' }}>
+                                            {selected.rooms?.map(r => `Room ${r.roomNumber}`).join(', ') || 'N/A'}
+                                        </span>
                                     </div>
                                     <div className="d-flex justify-content-between">
                                         <span style={{ color: 'var(--text-muted)' }}>Total Subtotal:</span>

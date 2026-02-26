@@ -4,7 +4,7 @@ const bookingSchema = new mongoose.Schema({
     customerName: { type: String, required: true },
     customerPhone: { type: String, required: true },
     customerEmail: String,
-    room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
+    rooms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }],
     checkIn: { type: Date, required: true },
     checkOut: { type: Date, required: true },
     adults: { type: Number, default: 1 },

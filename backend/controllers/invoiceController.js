@@ -23,18 +23,16 @@ exports.getInvoiceById = async (req, res) => {
 
 exports.createRoomInvoice = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.body.bookingId).populate('room');
+        const booking = await Booking.findById(req.body.bookingId).populate('rooms');
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
         const nights = Math.ceil((new Date(booking.checkOut) - new Date(booking.checkIn)) / (1000 * 60 * 60 * 24));
-        const items = [
-            {
-                description: `${booking.room.type} Room (${booking.room.roomNumber}) - ${nights} night(s)`,
-                quantity: nights,
-                unitPrice: booking.room.price,
-                total: booking.room.price * nights
-            }
-        ];
+        const items = booking.rooms.map(room => ({
+            description: `${room.type} Room (${room.roomNumber}) - ${nights} night(s)`,
+            quantity: nights,
+            unitPrice: room.price,
+            total: room.price * nights
+        }));
 
         if (booking.includeRoomService) {
             const rsCharge = req.body.roomServiceCharge !== undefined ? req.body.roomServiceCharge : 500;

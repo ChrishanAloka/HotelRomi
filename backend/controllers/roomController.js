@@ -34,7 +34,7 @@ exports.checkAvailability = async (req, res) => {
                 { checkOut: { $gt: new Date(checkIn), $lte: new Date(checkOut) } },
                 { checkIn: { $lte: new Date(checkIn) }, checkOut: { $gte: new Date(checkOut) } }
             ]
-        }).distinct('room');
+        }).distinct('rooms');
 
         const available = rooms.map(r => ({
             ...r._doc,
