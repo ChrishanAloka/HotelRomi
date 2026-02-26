@@ -34,7 +34,7 @@ export default function RestaurantPage() {
     };
 
     const placeOrder = async () => {
-        if (!orderForm.name || !orderForm.phone) return alert('Please fill in your name and phone number.');
+        if (!orderForm.name || !orderForm.phone) return alert('Please fill in your name and WhatsApp phone number.');
         setPlacing(true);
         try {
             await orderService.create({
@@ -240,7 +240,7 @@ export default function RestaurantPage() {
                             <h6 style={{ color: 'var(--cream)', fontSize: '0.85rem', letterSpacing: '0.05em', marginBottom: '1rem' }}>Your Details</h6>
                             <input className="form-control form-control-dark mb-2" placeholder="Your Name *"
                                 value={orderForm.name} onChange={e => setOrderForm(p => ({ ...p, name: e.target.value }))} />
-                            <input className="form-control form-control-dark mb-2" placeholder="Phone Number *" type="tel"
+                            <input className="form-control form-control-dark mb-2" placeholder="WhatsApp Phone Number *" type="tel"
                                 value={orderForm.phone} onChange={e => setOrderForm(p => ({ ...p, phone: e.target.value }))} />
                             <textarea className="form-control form-control-dark mb-3" rows={2} placeholder="Special notes (optional)"
                                 value={orderForm.notes} onChange={e => setOrderForm(p => ({ ...p, notes: e.target.value }))} />

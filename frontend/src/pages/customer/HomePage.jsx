@@ -195,7 +195,7 @@ export default function HomePage() {
                     </p>
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
                         <Link to="/book-room" className="btn btn-gold px-5 py-3">
-                            <i className="bi bi-calendar-plus me-2"></i>Reserve Now
+                            <i className="bi bi-calendar-plus me-2"></i>Book Now
                         </Link>
                         <Link to="/track-order" className="btn btn-outline-gold px-5 py-3">
                             <i className="bi bi-search me-2"></i>Track My Order

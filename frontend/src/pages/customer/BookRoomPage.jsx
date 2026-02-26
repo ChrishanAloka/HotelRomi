@@ -274,9 +274,9 @@ export default function BookRoomPage() {
                             <div className="row g-2" style={{ fontSize: '0.875rem' }}>
                                 <div className="col-5" style={{ color: 'var(--text-muted)' }}>Room:</div>
                                 <div className="col-7" style={{ color: 'var(--cream)' }}>Room {selectedRoom.roomNumber}</div>
-                                <div className="col-5" style={{ color: 'var(--text-muted)' }}>Check-In:</div>
+                                <div className="col-5" style={{ color: 'var(--text-muted)' }}>Check-In Date:</div>
                                 <div className="col-7" style={{ color: 'var(--cream)' }}>{search.checkIn}</div>
-                                <div className="col-5" style={{ color: 'var(--text-muted)' }}>Check-Out:</div>
+                                <div className="col-5" style={{ color: 'var(--text-muted)' }}>Check-Out Date:</div>
                                 <div className="col-7" style={{ color: 'var(--cream)' }}>{search.checkOut}</div>
                                 <div className="col-5" style={{ color: 'var(--text-muted)' }}>Amount:</div>
                                 <div className="col-7" style={{ color: 'var(--gold)', fontFamily: 'Cormorant Garamond', fontSize: '1.1rem' }}>LKR {booked.totalAmount?.toLocaleString()}</div>
