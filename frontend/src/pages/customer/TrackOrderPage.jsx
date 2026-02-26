@@ -19,10 +19,29 @@ export default function TrackOrderPage() {
                 orderService.getByPhone(phone.trim()),
                 bookingService.getByPhone(phone.trim())
             ]);
-            setOrders(oRes.data);
-            setBookings(bRes.data);
+
+            const now = new Date();
+            const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+
+            const filteredOrders = oRes.data.filter(order => {
+                if (order.status === 'Delivered') {
+                    return (now - new Date(order.createdAt)) <= twoDaysInMs;
+                }
+                return true;
+            });
+
+            const filteredBookings = bRes.data.filter(booking => {
+                if (booking.status === 'Checked-Out') {
+                    return (now - new Date(booking.checkOut)) <= twoDaysInMs;
+                }
+                return true;
+            });
+
+            setOrders(filteredOrders);
+            setBookings(filteredBookings);
             setSearched(true);
-        } catch {
+        } catch (error) {
+            console.error(error);
             setOrders([]); setBookings([]); setSearched(true);
         } finally { setLoading(false); }
     };

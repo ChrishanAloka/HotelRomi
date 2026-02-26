@@ -10,7 +10,7 @@ export default function Navbar() {
         { to: '/', label: 'Home' },
         { to: '/restaurant', label: 'Restaurant' },
         { to: '/book-room', label: 'Rooms' },
-        { to: '/track-order', label: 'Track Order' },
+        { to: '/track-order', label: 'Track Order / Booking' },
     ];
 
     return (

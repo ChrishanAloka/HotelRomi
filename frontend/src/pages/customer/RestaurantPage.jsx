@@ -12,7 +12,7 @@ export default function RestaurantPage() {
     const [category, setCategory] = useState('All');
     const [loading, setLoading] = useState(true);
     const [showCart, setShowCart] = useState(false);
-    const [orderForm, setOrderForm] = useState({ name: '', phone: '', notes: '' });
+    const [orderForm, setOrderForm] = useState({ name: '', phone: '', type: 'Takeaway', notes: '' });
     const [placing, setPlacing] = useState(false);
     const [success, setSuccess] = useState(false);
     const { cart, addToCart, removeFromCart, updateQty, clearCart, total, count } = useCart();
@@ -28,8 +28,9 @@ export default function RestaurantPage() {
 
     const buildWhatsAppMessage = () => {
         const lines = cart.map(i => `• ${i.name} x${i.quantity} — LKR ${(i.price * i.quantity).toLocaleString()}`).join('\n');
+        const typeLabel = orderForm.type === 'Dine In' ? 'Dine In' : 'Takeaway';
         return encodeURIComponent(
-            `🍽️ *New Takeaway Order — Hotel Romi*\n\n*Customer:* ${orderForm.name}\n*Phone:* ${orderForm.phone}\n\n*Order:*\n${lines}\n\n*Total:* LKR ${total.toLocaleString()}\n\n${orderForm.notes ? `*Notes:* ${orderForm.notes}` : ''}`
+            `🍽️ *New ${typeLabel} Order — Hotel Romi*\n\n*Customer:* ${orderForm.name}\n*Phone:* ${orderForm.phone}\n\n*Order:*\n${lines}\n\n*Total:* LKR ${total.toLocaleString()}\n\n${orderForm.notes ? `*Notes:* ${orderForm.notes}` : ''}${orderForm.type === 'Dine In' ? '\n\n⚠️ *Please send your payment receipt to accept the order.*' : ''}`
         );
     };
 
@@ -41,7 +42,7 @@ export default function RestaurantPage() {
                 customerName: orderForm.name,
                 customerPhone: orderForm.phone,
                 items: cart.map(i => ({ menuItem: i._id, name: i.name, price: i.price, quantity: i.quantity })),
-                orderType: 'Takeaway',
+                orderType: orderForm.type,
                 notes: orderForm.notes
             });
             // Open WhatsApp
@@ -238,6 +239,25 @@ export default function RestaurantPage() {
                                 </span>
                             </div>
                             <h6 style={{ color: 'var(--cream)', fontSize: '0.85rem', letterSpacing: '0.05em', marginBottom: '1rem' }}>Your Details</h6>
+
+                            <div className="d-flex gap-2 mb-3">
+                                {['Takeaway', 'Dine In'].map(t => (
+                                    <button key={t} className={`btn btn-sm flex-grow-1 ${orderForm.type === t ? 'btn-gold' : 'btn-outline-gold'}`}
+                                        onClick={() => setOrderForm(p => ({ ...p, type: t }))}>
+                                        {t}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {orderForm.type === 'Dine In' && (
+                                <div className="card-dark p-3 mb-3" style={{ border: '1px solid rgba(241, 229, 172, 0.3)', background: 'rgba(241, 229, 172, 0.05)' }}>
+                                    <div style={{ color: 'var(--gold)', fontSize: '0.8rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <i className="bi bi-info-circle-fill"></i>
+                                        <span>Send the payment receipt of the order to accept the order</span>
+                                    </div>
+                                </div>
+                            )}
+
                             <input className="form-control form-control-dark mb-2" placeholder="Your Name *"
                                 value={orderForm.name} onChange={e => setOrderForm(p => ({ ...p, name: e.target.value }))} />
                             <input className="form-control form-control-dark mb-2" placeholder="WhatsApp Phone Number *" type="tel"

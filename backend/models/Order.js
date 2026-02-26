@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema({
         price: Number,
         quantity: { type: Number, default: 1 }
     }],
-    orderType: { type: String, enum: ['Takeaway', 'Room Service'], default: 'Takeaway' },
+    orderType: { type: String, enum: ['Takeaway', 'Room Service', 'Dine In'], default: 'Takeaway' },
     status: {
         type: String,
         enum: ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Delivered', 'Cancelled'],
