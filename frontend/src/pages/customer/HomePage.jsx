@@ -2,14 +2,58 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import logo from '../../assets/romi_logo.png';
 
+// Service Images
+import acRoomImg from '../../assets/AC & Non-AC Rooms.webp';
+import poolImg from '../../assets/Swimming Pool.webp';
+import restaurantImg from '../../assets/Family Restaurant.webp';
+import roomServiceImg from '../../assets/Room Service.webp';
+import parkingImg from '../../assets/Secure Parking.webp';
+import dayOutingImg from '../../assets/Day Outing.webp';
+import banquetImg from '../../assets/Banquet Facilities.webp';
+
 const services = [
-    { icon: 'bi-snow2', title: 'AC & Non-AC Rooms', desc: 'Comfortable rooms tailored to your preference, equipped with modern amenities for a restful stay.' },
-    { icon: 'bi-water', title: 'Swimming Pool', desc: 'Refresh and unwind in our pristine swimming pool, open for guests throughout the day.' },
-    { icon: 'bi-cup-hot', title: 'Family Restaurant', desc: 'Savor authentic flavors and international cuisine crafted by our expert culinary team.' },
-    { icon: 'bi-bell', title: 'Room Service', desc: '24-hour room service bringing hotel-quality dining directly to your door, any time.' },
-    { icon: 'bi-p-circle', title: 'Secure Parking', desc: 'Ample and secure parking facility ensuring your vehicle is safe throughout your stay.' },
-    { icon: 'bi-sun', title: 'Day Outing', desc: 'Full-day outing packages with access to all hotel facilities without an overnight stay.' },
-    { icon: 'bi-stars', title: 'Banquet Facilities', desc: 'Elegant event spaces for weddings, engagements, birthdays, farewells, homecomings and family gatherings.' },
+    {
+        icon: 'bi-snow2',
+        title: 'AC & Non-AC Rooms',
+        desc: 'Comfortable rooms tailored to your preference, equipped with modern amenities for a restful stay.',
+        image: acRoomImg
+    },
+    {
+        icon: 'bi-water',
+        title: 'Swimming Pool',
+        desc: 'Refresh and unwind in our pristine swimming pool, open for guests throughout the day.',
+        image: poolImg
+    },
+    {
+        icon: 'bi-cup-hot',
+        title: 'Family Restaurant',
+        desc: 'Savor authentic flavors and international cuisine crafted by our expert culinary team.',
+        image: restaurantImg
+    },
+    {
+        icon: 'bi-bell',
+        title: 'Room Service',
+        desc: '24-hour room service bringing hotel-quality dining directly to your door, any time.',
+        image: roomServiceImg
+    },
+    {
+        icon: 'bi-p-circle',
+        title: 'Secure Parking',
+        desc: 'Ample and secure parking facility ensuring your vehicle is safe throughout your stay.',
+        image: parkingImg
+    },
+    {
+        icon: 'bi-sun',
+        title: 'Day Outing',
+        desc: 'Full-day outing packages with access to all hotel facilities without an overnight stay.',
+        image: dayOutingImg
+    },
+    {
+        icon: 'bi-stars',
+        title: 'Banquet Facilities',
+        desc: 'Elegant event spaces for weddings, engagements, birthdays, farewells, homecomings and family gatherings.',
+        image: banquetImg
+    },
 ];
 
 const events = [
@@ -115,27 +159,75 @@ export default function HomePage() {
                     <div className="row g-4">
                         {services.map((s, i) => (
                             <div key={i} className="col-md-6 col-lg-4">
-                                <div className="card-dark p-4 h-100 animate-in" style={{
-                                    animationDelay: `${i * 0.1}s`,
-                                    opacity: 0
+                                <div className="card-dark h-100 animate-in overflow-hidden" style={{
+                                    animationDelay: `${i * 0.15}s`,
+                                    opacity: 0,
+                                    padding: 0,
+                                    transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
                                 }}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = 'rgba(241, 229, 172, 0.4)';
-                                        e.currentTarget.style.transform = 'translateY(-4px)';
+                                        e.currentTarget.style.borderColor = 'rgba(241, 229, 172, 0.6)';
+                                        e.currentTarget.style.transform = 'translateY(-10px)';
+                                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4)';
+                                        const img = e.currentTarget.querySelector('img');
+                                        if (img) img.style.transform = 'scale(1.1) rotate(1deg)';
                                     }}
                                     onMouseLeave={e => {
                                         e.currentTarget.style.borderColor = 'rgba(241, 229, 172, 0.15)';
                                         e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                        const img = e.currentTarget.querySelector('img');
+                                        if (img) img.style.transform = 'scale(1.0) rotate(0deg)';
                                     }}>
-                                    <div style={{
-                                        width: 52, height: 52, borderRadius: '3px',
-                                        background: 'rgba(241, 229, 172, 0.1)', border: '1px solid rgba(241, 229, 172, 0.25)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem'
-                                    }}>
-                                        <i className={`bi ${s.icon} text-gold`} style={{ fontSize: '1.4rem' }}></i>
+
+                                    {/* Image Section */}
+                                    <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
+                                        <div style={{
+                                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                                            background: 'linear-gradient(to bottom, transparent 60%, rgba(0,18,32,0.8) 100%)',
+                                            zIndex: 1
+                                        }}></div>
+                                        <img
+                                            src={s.image}
+                                            alt={s.title}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                                            }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '-26px',
+                                            left: '24px',
+                                            width: 56, height: 56, borderRadius: '4px',
+                                            background: 'var(--dark-2)', border: '1px solid var(--gold)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 8px 20px rgba(0,0,0,0.5)',
+                                            zIndex: 2,
+                                            transition: 'transform 0.3s ease'
+                                        }}>
+                                            <i className={`bi ${s.icon} text-gold`} style={{ fontSize: '1.6rem' }}></i>
+                                        </div>
                                     </div>
-                                    <h5 style={{ fontFamily: 'Cormorant Garamond', fontSize: '1.3rem', color: 'var(--cream)', marginBottom: '0.75rem' }}>{s.title}</h5>
-                                    <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
+
+                                    <div className="p-4 pt-5">
+                                        <h5 style={{
+                                            fontFamily: 'Cormorant Garamond',
+                                            fontSize: '1.5rem',
+                                            color: 'var(--gold)',
+                                            marginBottom: '0.8rem',
+                                            letterSpacing: '0.02em'
+                                        }}>{s.title}</h5>
+                                        <p style={{
+                                            color: 'var(--text-light)',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            margin: 0,
+                                            opacity: 0.9
+                                        }}>{s.desc}</p>
+                                    </div>
                                 </div>
                             </div>
                         ))}
