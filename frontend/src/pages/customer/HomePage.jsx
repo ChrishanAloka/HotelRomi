@@ -3,13 +3,13 @@ import Navbar from '../../components/common/Navbar';
 import logo from '../../assets/romi_logo.png';
 
 // Service Images
-import acRoomImg from '../../assets/AC & Non-AC Rooms.webp';
-import poolImg from '../../assets/Swimming Pool.webp';
-import restaurantImg from '../../assets/Family Restaurant.webp';
-import roomServiceImg from '../../assets/Room Service.webp';
-import parkingImg from '../../assets/Secure Parking.webp';
-import dayOutingImg from '../../assets/Day Outing.webp';
-import banquetImg from '../../assets/Banquet Facilities.webp';
+import acRoomImg from '../../assets/AC & Non-AC Rooms.jpg';
+import poolImg from '../../assets/Swimming Pool.jpg';
+import restaurantImg from '../../assets/Family Restaurant.jpg';
+import roomServiceImg from '../../assets/Room Service.jpg';
+import parkingImg from '../../assets/Secure Parking.jpg';
+import dayOutingImg from '../../assets/Day Outing.jpg';
+import banquetImg from '../../assets/Banquet Facilities.jpg';
 
 const services = [
     {
@@ -160,8 +160,7 @@ export default function HomePage() {
                         {services.map((s, i) => (
                             <div key={i} className="col-md-6 col-lg-4">
                                 <div className="card-dark h-100 animate-in overflow-hidden" style={{
-                                    animationDelay: `${i * 0.15}s`,
-                                    opacity: 0,
+                                    animationDelay: `${i * 0.08}s`,
                                     padding: 0,
                                     transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
                                 }}
@@ -181,38 +180,50 @@ export default function HomePage() {
                                     }}>
 
                                     {/* Image Section */}
-                                    <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
+                                    <div style={{ height: '220px', position: 'relative' }}>
                                         <div style={{
-                                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                                            background: 'linear-gradient(to bottom, transparent 60%, rgba(0,18,32,0.8) 100%)',
-                                            zIndex: 1
-                                        }}></div>
-                                        <img
-                                            src={s.image}
-                                            alt={s.title}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                                transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)'
-                                            }}
-                                        />
+                                            height: '100%',
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                            borderRadius: '4px 4px 0 0'
+                                        }}>
+                                            <div style={{
+                                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                                                background: 'linear-gradient(to bottom, transparent 60%, rgba(0,18,32,0.8) 100%)',
+                                                zIndex: 1
+                                            }}></div>
+                                            <img
+                                                src={s.image}
+                                                alt={s.title}
+                                                loading={i < 3 ? "eager" : "lazy"}
+                                                decoding="async"
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* Floating Icon - Now outside the overflow:hidden wrapper */}
                                         <div style={{
                                             position: 'absolute',
-                                            bottom: '-26px',
+                                            bottom: '-28px',
                                             left: '24px',
                                             width: 56, height: 56, borderRadius: '4px',
                                             background: 'var(--dark-2)', border: '1px solid var(--gold)',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             boxShadow: '0 8px 20px rgba(0,0,0,0.5)',
-                                            zIndex: 2,
+                                            zIndex: 5,
                                             transition: 'transform 0.3s ease'
                                         }}>
                                             <i className={`bi ${s.icon} text-gold`} style={{ fontSize: '1.6rem' }}></i>
                                         </div>
                                     </div>
 
-                                    <div className="p-4 pt-5">
+                                    <div className="p-4 pt-5" style={{ position: 'relative', zIndex: 1 }}>
                                         <h5 style={{
                                             fontFamily: 'Cormorant Garamond',
                                             fontSize: '1.5rem',
