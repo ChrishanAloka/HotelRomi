@@ -552,3 +552,190 @@ h6,
     border-color: var(--gold);
     color: var(--dark);
 }
+
+/* Drawer */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 1070;
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.drawer-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+
+.drawer-content {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    width: 500px;
+    max-width: 90vw;
+    height: 100vh;
+    background: var(--dark-2);
+    border-left: 1px solid rgba(241, 229, 172, 0.2);
+    z-index: 1080;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0;
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-content.active {
+    right: 0;
+}
+
+.drawer-header {
+    background: var(--maroon);
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(241, 229, 172, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-body {
+    padding: 2rem;
+    flex: 1;
+}
+
+/* Calendar */
+.calendar-container {
+    background: rgba(0, 27, 52, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(241, 229, 172, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1rem;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.calendar-header {
+    background: rgba(241, 229, 172, 0.08);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(241, 229, 172, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: rgba(241, 229, 172, 0.05);
+}
+
+.calendar-day-label {
+    padding: 1rem 0.75rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--gold);
+    background: rgba(241, 229, 172, 0.12);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border-bottom: 1px solid rgba(241, 229, 172, 0.2);
+    border-right: 1px solid rgba(241, 229, 172, 0.15);
+}
+
+.calendar-cell {
+    min-height: 125px;
+    background: rgba(241, 229, 172, 0.02);
+    border-right: 1px solid rgba(241, 229, 172, 0.12);
+    border-bottom: 1px solid rgba(241, 229, 172, 0.12);
+    padding: 0.6rem;
+    position: relative;
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calendar-cell:hover {
+    background: rgba(241, 229, 172, 0.03);
+}
+
+.calendar-cell.no-bookings {
+    min-height: 65px;
+}
+
+.calendar-cell.other-month {
+    opacity: 0.3;
+}
+
+.calendar-cell.today {
+    background: rgba(241, 229, 172, 0.08);
+}
+
+.calendar-day-number {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.calendar-cell.today .calendar-day-number {
+    color: var(--white);
+    font-weight: 800;
+    text-shadow: 0 0 10px var(--gold);
+}
+
+
+.booking-pill {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    font-family: 'Jost', sans-serif;
+}
+
+.booking-pill:hover {
+    transform: translateX(2px);
+    filter: brightness(1.2);
+}
+
+.booking-pill-confirmed {
+    background: rgba(76, 175, 124, 0.2);
+    color: #A2E9C8;
+    border-left-color: var(--success);
+}
+
+.booking-pill-pending {
+    background: rgba(224, 168, 92, 0.2);
+    color: #FFE1A8;
+    border-left-color: var(--warning);
+}
+
+.booking-pill-checked-in {
+    background: rgba(92, 168, 224, 0.2);
+    color: #B2DFFF;
+    border-left-color: var(--info);
+}
+
+.booking-pill-checked-out {
+    background: rgba(122, 114, 104, 0.1);
+    color: var(--text-muted);
+    border-left-color: var(--text-muted);
+}
+
+.booking-pill-cancelled {
+    background: rgba(224, 92, 92, 0.1);
+    color: #F49F9F;
+    border-left-color: var(--danger);
+}

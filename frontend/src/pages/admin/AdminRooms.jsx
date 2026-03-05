@@ -11,6 +11,7 @@ export default function AdminRooms() {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(defaultForm);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(null);
 
     const load = () => roomService.getAll().then(r => setRooms(r.data)).finally(() => setLoading(false));
     useEffect(() => { load(); }, []);
@@ -35,8 +36,15 @@ export default function AdminRooms() {
 
     const del = async (id) => {
         if (!confirm('Delete this room?')) return;
-        await roomService.delete(id); load();
+        setDeleting(id);
+        try {
+            await roomService.delete(id);
+            await load();
+        } finally {
+            setDeleting(null);
+        }
     };
+
 
     return (
         <AdminLayout title="Rooms">
@@ -76,11 +84,12 @@ export default function AdminRooms() {
                                             }}>{r.isAvailable ? 'Available' : 'Unavailable'}</span>
                                         </td>
                                         <td>
-                                            <button className="btn btn-sm btn-outline-gold me-2 px-2" onClick={() => openEdit(r)}>
+                                            <button className="btn btn-sm btn-outline-gold me-2 px-2" onClick={() => openEdit(r)} disabled={deleting === r._id}>
                                                 <i className="bi bi-pencil"></i>
                                             </button>
-                                            <button className="btn btn-sm px-2" style={{ background: 'rgba(224,92,92,0.15)', border: '1px solid rgba(224,92,92,0.3)', color: 'var(--danger)', borderRadius: 2 }} onClick={() => del(r._id)}>
-                                                <i className="bi bi-trash"></i>
+                                            <button className="btn btn-sm px-2" style={{ background: 'rgba(224,92,92,0.15)', border: '1px solid rgba(224,92,92,0.3)', color: 'var(--danger)', borderRadius: 2 }}
+                                                onClick={() => del(r._id)} disabled={deleting === r._id}>
+                                                {deleting === r._id ? <span className="spinner-border spinner-border-sm" style={{ width: '0.8rem', height: '0.8rem' }} /> : <i className="bi bi-trash"></i>}
                                             </button>
                                         </td>
                                     </tr>

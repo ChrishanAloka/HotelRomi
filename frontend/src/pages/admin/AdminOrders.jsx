@@ -15,6 +15,7 @@ export default function AdminOrders() {
     const [billModal, setBillModal] = useState(false);
     const [billForm, setBillForm] = useState({ discount: 0, tax: 0, notes: '' });
     const [generating, setGenerating] = useState(false);
+    const [updating, setUpdating] = useState(null);
 
     const openBillModal = (o) => {
         setSelected(o);
@@ -30,8 +31,15 @@ export default function AdminOrders() {
     useEffect(() => { load(); }, []);
 
     const updateStatus = async (id, status) => {
-        await orderService.updateStatus(id, status); load();
+        setUpdating(id);
+        try {
+            await orderService.updateStatus(id, status);
+            await load();
+        } finally {
+            setUpdating(null);
+        }
     };
+
 
     const notifyWhatsApp = (o) => {
         let statusMsg = "";
@@ -106,12 +114,17 @@ export default function AdminOrders() {
                                         <td><span className="badge-gold" style={{ fontSize: '0.65rem' }}>{o.orderType}</span></td>
                                         <td style={{ fontFamily: 'Cormorant Garamond', color: 'var(--gold)', fontSize: '1rem' }}>LKR {o.totalAmount?.toLocaleString()}</td>
                                         <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
-                                        <td><StatusBadge status={o.status} /></td>
+                                        <td>
+                                            <div className="d-flex align-items-center gap-2">
+                                                <StatusBadge status={o.status} />
+                                                {updating === o._id && <span className="spinner-border spinner-border-sm text-gold" style={{ width: '0.8rem', height: '0.8rem' }} />}
+                                            </div>
+                                        </td>
                                         <td>
                                             <div className="d-flex gap-1">
                                                 <select className="form-select form-select-sm"
                                                     style={{ background: 'var(--dark-3)', border: '1px solid rgba(241, 229, 172,0.2)', color: 'var(--cream)', width: 'auto', fontSize: '0.75rem', borderRadius: 2 }}
-                                                    value={o.status} onChange={e => updateStatus(o._id, e.target.value)}>
+                                                    value={o.status} onChange={e => updateStatus(o._id, e.target.value)} disabled={updating === o._id}>
                                                     {STATUSES.map(s => <option key={s}>{s}</option>)}
                                                 </select>
                                                 <button className="btn btn-sm btn-outline-gold px-2" title="Generate Bill"

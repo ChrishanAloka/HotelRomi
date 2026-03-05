@@ -12,6 +12,7 @@ export default function AdminMenu() {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(defaultForm);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(null);
     const [catFilter, setCatFilter] = useState('');
 
     const load = () => menuService.getAll().then(r => setItems(r.data)).finally(() => setLoading(false));
@@ -19,7 +20,18 @@ export default function AdminMenu() {
 
     const openNew = () => { setEditing(null); setForm(defaultForm); setModal(true); };
     const openEdit = (i) => { setEditing(i._id); setForm({ ...i, price: i.price.toString() }); setModal(true); };
-    const del = async (id) => { if (!confirm('Delete?')) return; await menuService.delete(id); load(); };
+
+    const del = async (id) => {
+        if (!confirm('Delete?')) return;
+        setDeleting(id);
+        try {
+            await menuService.delete(id);
+            await load();
+        } finally {
+            setDeleting(null);
+        }
+    };
+
 
     const save = async () => {
         setSaving(true);
@@ -57,9 +69,10 @@ export default function AdminMenu() {
                                         {!item.isAvailable && <span style={{ fontSize: '0.65rem', color: 'var(--danger)', marginLeft: 6 }}>Unavailable</span>}
                                     </div>
                                     <div className="d-flex gap-1">
-                                        <button className="btn btn-sm btn-outline-gold px-2 py-1" onClick={() => openEdit(item)}><i className="bi bi-pencil"></i></button>
-                                        <button className="btn btn-sm px-2 py-1" style={{ background: 'rgba(224,92,92,0.12)', border: '1px solid rgba(224,92,92,0.25)', color: 'var(--danger)', borderRadius: 2 }} onClick={() => del(item._id)}>
-                                            <i className="bi bi-trash"></i>
+                                        <button className="btn btn-sm btn-outline-gold px-2 py-1" onClick={() => openEdit(item)} disabled={deleting === item._id}><i className="bi bi-pencil"></i></button>
+                                        <button className="btn btn-sm px-2 py-1" style={{ background: 'rgba(224,92,92,0.12)', border: '1px solid rgba(224,92,92,0.25)', color: 'var(--danger)', borderRadius: 2 }}
+                                            onClick={() => del(item._id)} disabled={deleting === item._id}>
+                                            {deleting === item._id ? <span className="spinner-border spinner-border-sm" style={{ width: '0.8rem', height: '0.8rem' }} /> : <i className="bi bi-trash"></i>}
                                         </button>
                                     </div>
                                 </div>

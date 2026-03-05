@@ -4,27 +4,35 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import { invoiceService } from '../../services/api';
 
 export default function AdminInvoices() {
-    const [invoices, setInvoices] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selected, setSelected] = useState(null);
-    const [filter, setFilter] = useState('');
-    const location = useLocation();
-    const highlightId = new URLSearchParams(location.search).get('highlight');
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState('');
+  const [updating, setUpdating] = useState(null);
+  const location = useLocation();
+  const highlightId = new URLSearchParams(location.search).get('highlight');
 
-    const load = () => invoiceService.getAll().then(r => setInvoices(r.data)).finally(() => setLoading(false));
-    useEffect(() => { load(); }, []);
+  const load = () => invoiceService.getAll().then(r => setInvoices(r.data)).finally(() => setLoading(false));
+  useEffect(() => { load(); }, []);
 
-    const markPaid = async (id) => {
-        await invoiceService.update(id, { isPaid: true }); load();
-    };
+  const markPaid = async (id) => {
+    setUpdating(id);
+    try {
+      await invoiceService.update(id, { isPaid: true });
+      await load();
+    } finally {
+      setUpdating(null);
+    }
+  };
 
-    const filtered = filter ? invoices.filter(i => i.type === filter) : invoices;
 
-    const printInvoice = (inv) => {
-        const isRestaurant = inv.type === 'Restaurant';
-        const docTitle = isRestaurant ? 'Restaurant Bill' : 'Room Invoice';
-        const w = window.open('', '_blank');
-        w.document.write(`
+  const filtered = filter ? invoices.filter(i => i.type === filter) : invoices;
+
+  const printInvoice = (inv) => {
+    const isRestaurant = inv.type === 'Restaurant';
+    const docTitle = isRestaurant ? 'Restaurant Bill' : 'Room Invoice';
+    const w = window.open('', '_blank');
+    w.document.write(`
       <html><head><title>${docTitle} ${inv.invoiceNumber}</title>
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -132,86 +140,86 @@ export default function AdminInvoices() {
       <script>window.onload = () => { window.print(); }</script>
       </body></html>
     `);
-        w.document.close();
-    };
+    w.document.close();
+  };
 
-    return (
-        <AdminLayout title="Invoices">
-            <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-                <div className="d-flex flex-wrap gap-2">
-                    <button className={`btn btn-sm ${!filter ? 'btn-gold' : 'btn-outline-gold'}`} onClick={() => setFilter('')}>All</button>
-                    <button className={`btn btn-sm ${filter === 'Room' ? 'btn-gold' : 'btn-outline-gold'}`} onClick={() => setFilter('Room')}>Room</button>
-                    <button className={`btn btn-sm ${filter === 'Restaurant' ? 'btn-gold' : 'btn-outline-gold'}`} onClick={() => setFilter('Restaurant')}>Restaurant</button>
-                </div>
-                <div className="dropdown">
-                    <button className="btn btn-gold dropdown-toggle" data-bs-toggle="dropdown">
-                        <i className="bi bi-plus-lg me-2"></i>Create Invoice
-                    </button>
-                    <ul className="dropdown-menu dropdown-menu-end dropdown-menu-dark border-gold-subtle shadow">
-                        <li><Link className="dropdown-item py-2" to="/admin/bookings"><i className="bi bi-calendar-check me-2"></i>From Room Booking</Link></li>
-                        <li><Link className="dropdown-item py-2" to="/admin/orders"><i className="bi bi-bag-check me-2"></i>From Restaurant Order</Link></li>
-                    </ul>
-                </div>
-            </div>
+  return (
+    <AdminLayout title="Invoices">
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div className="d-flex flex-wrap gap-2">
+          <button className={`btn btn-sm ${!filter ? 'btn-gold' : 'btn-outline-gold'}`} onClick={() => setFilter('')}>All</button>
+          <button className={`btn btn-sm ${filter === 'Room' ? 'btn-gold' : 'btn-outline-gold'}`} onClick={() => setFilter('Room')}>Room</button>
+          <button className={`btn btn-sm ${filter === 'Restaurant' ? 'btn-gold' : 'btn-outline-gold'}`} onClick={() => setFilter('Restaurant')}>Restaurant</button>
+        </div>
+        <div className="dropdown">
+          <button className="btn btn-gold dropdown-toggle" data-bs-toggle="dropdown">
+            <i className="bi bi-plus-lg me-2"></i>Create Invoice
+          </button>
+          <ul className="dropdown-menu dropdown-menu-end dropdown-menu-dark border-gold-subtle shadow">
+            <li><Link className="dropdown-item py-2" to="/admin/bookings"><i className="bi bi-calendar-check me-2"></i>From Room Booking</Link></li>
+            <li><Link className="dropdown-item py-2" to="/admin/orders"><i className="bi bi-bag-check me-2"></i>From Restaurant Order</Link></li>
+          </ul>
+        </div>
+      </div>
 
-            {loading ? <div className="text-center py-5"><span className="spinner-border spinner-gold" /></div> : (
-                <div className="card-dark">
-                    <div className="table-responsive">
-                        <table className="table table-dark-custom mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Invoice #</th>
-                                    <th>Type</th>
-                                    <th>Customer</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Paid</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map(inv => (
-                                    <tr key={inv._id} className={highlightId === inv._id ? 'row-highlight' : ''}>
-                                        <td style={{ color: 'var(--gold)', fontWeight: 600, fontSize: '0.85rem' }}>{inv.invoiceNumber}</td>
-                                        <td><span className="badge-gold" style={{ fontSize: '0.65rem' }}>{inv.type}</span></td>
-                                        <td>
-                                            <div style={{ color: 'var(--cream)', fontWeight: 500, fontSize: '0.875rem' }}>{inv.customerName}</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{inv.customerPhone}</div>
-                                        </td>
-                                        <td style={{ fontFamily: 'Cormorant Garamond', color: 'var(--gold)', fontSize: '1rem' }}>LKR {inv.totalAmount?.toLocaleString()}</td>
-                                        <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{new Date(inv.createdAt).toLocaleDateString()}</td>
-                                        <td>
-                                            <span style={{
-                                                fontSize: '0.68rem', padding: '0.3em 0.6em', borderRadius: 2,
-                                                background: inv.isPaid ? 'rgba(76,175,124,0.15)' : 'rgba(224,168,92,0.15)',
-                                                color: inv.isPaid ? 'var(--success)' : 'var(--warning)',
-                                                border: `1px solid ${inv.isPaid ? 'rgba(76,175,124,0.3)' : 'rgba(224,168,92,0.3)'}`
-                                            }}>{inv.isPaid ? 'Paid' : 'Pending'}</span>
-                                        </td>
-                                        <td>
-                                            <div className="d-flex gap-1">
-                                                <button className="btn btn-sm btn-outline-gold px-2" title="Print" onClick={() => printInvoice(inv)}>
-                                                    <i className="bi bi-printer"></i>
-                                                </button>
-                                                {!inv.isPaid && (
-                                                    <button className="btn btn-sm px-2" title="Mark Paid"
-                                                        style={{ background: 'rgba(76,175,124,0.12)', border: '1px solid rgba(76,175,124,0.3)', color: 'var(--success)', borderRadius: 2 }}
-                                                        onClick={() => markPaid(inv._id)}>
-                                                        <i className="bi bi-check-lg"></i>
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {filtered.length === 0 && (
-                                    <tr><td colSpan={7} className="text-center py-4" style={{ color: 'var(--text-muted)' }}>No invoices found</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-        </AdminLayout>
-    );
+      {loading ? <div className="text-center py-5"><span className="spinner-border spinner-gold" /></div> : (
+        <div className="card-dark">
+          <div className="table-responsive">
+            <table className="table table-dark-custom mb-0">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Type</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Paid</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(inv => (
+                  <tr key={inv._id} className={highlightId === inv._id ? 'row-highlight' : ''}>
+                    <td style={{ color: 'var(--gold)', fontWeight: 600, fontSize: '0.85rem' }}>{inv.invoiceNumber}</td>
+                    <td><span className="badge-gold" style={{ fontSize: '0.65rem' }}>{inv.type}</span></td>
+                    <td>
+                      <div style={{ color: 'var(--cream)', fontWeight: 500, fontSize: '0.875rem' }}>{inv.customerName}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{inv.customerPhone}</div>
+                    </td>
+                    <td style={{ fontFamily: 'Cormorant Garamond', color: 'var(--gold)', fontSize: '1rem' }}>LKR {inv.totalAmount?.toLocaleString()}</td>
+                    <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{new Date(inv.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <span style={{
+                        fontSize: '0.68rem', padding: '0.3em 0.6em', borderRadius: 2,
+                        background: inv.isPaid ? 'rgba(76,175,124,0.15)' : 'rgba(224,168,92,0.15)',
+                        color: inv.isPaid ? 'var(--success)' : 'var(--warning)',
+                        border: `1px solid ${inv.isPaid ? 'rgba(76,175,124,0.3)' : 'rgba(224,168,92,0.3)'}`
+                      }}>{inv.isPaid ? 'Paid' : 'Pending'}</span>
+                    </td>
+                    <td>
+                      <div className="d-flex gap-1">
+                        <button className="btn btn-sm btn-outline-gold px-2" title="Print" onClick={() => printInvoice(inv)} disabled={updating === inv._id}>
+                          <i className="bi bi-printer"></i>
+                        </button>
+                        {!inv.isPaid && (
+                          <button className="btn btn-sm px-2" title="Mark Paid"
+                            style={{ background: 'rgba(76,175,124,0.12)', border: '1px solid rgba(76,175,124,0.3)', color: 'var(--success)', borderRadius: 2 }}
+                            onClick={() => markPaid(inv._id)} disabled={updating === inv._id}>
+                            {updating === inv._id ? <span className="spinner-border spinner-border-sm" style={{ width: '0.8rem', height: '0.8rem' }} /> : <i className="bi bi-check-lg"></i>}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={7} className="text-center py-4" style={{ color: 'var(--text-muted)' }}>No invoices found</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
+  );
 }
